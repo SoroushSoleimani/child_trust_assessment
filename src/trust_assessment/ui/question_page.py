@@ -24,18 +24,15 @@ class QuestionPage:
         main_frame = tk.Frame(self.parent, bg=BACKGROUND_COLOR)
         main_frame.pack(expand=True, fill="both")
         
-        scenario_label = tk.Label(main_frame, text=f"سناریو: {self.scenario_name}", 
+        scenario_label = tk.Label(main_frame, text=f"{self.scenario_name} سناریو", 
                                    font=("B Titr", 18), bg=BACKGROUND_COLOR, fg="white")
         scenario_label.pack(pady=20)
-        
-        self.question_frames = {}
         
         for idx, q in enumerate(QUESTIONS):
             q_frame = tk.LabelFrame(main_frame, text=q["text"], font=("B Nazanin", 14), 
                                      bg="white", fg="black", padx=20, pady=10)
             q_frame.pack(pady=10, padx=50, fill="x")
             
-            self.question_frames[q["key"]] = q_frame
             self.start_times[q["key"]] = None
             
             btn_frame = tk.Frame(q_frame, bg="white")
