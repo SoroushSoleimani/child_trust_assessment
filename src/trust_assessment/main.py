@@ -81,7 +81,7 @@ class TrustAssessmentApp:
         self.show_video()
     
     def show_video(self):
-        if self.current_scenario_index >= len(self.scenario_order):
+        if self.current_scenario_index >= 8:
             self.finish_test()
             return
         
@@ -119,7 +119,7 @@ class TrustAssessmentApp:
         if self.current_scenario_index == 4 and not self.waiting_for_break:
             self.waiting_for_break = True
             self.show_break()
-        elif self.current_scenario_index >= len(self.scenario_order):
+        elif self.current_scenario_index >= 8:
             self.finish_test()
         else:
             self.waiting_for_break = False
@@ -138,7 +138,14 @@ class TrustAssessmentApp:
         BreakWindow(break_window, on_break_complete)
     
     def finish_test(self):
-        filename = self.excel_service.save_session(self.session)
+        if self.session is None:
+            return
+        
+        try:
+            filename = self.excel_service.save_session(self.session)
+        except Exception as e:
+            messagebox.showerror("خطا", f"خطا در ذخیره اطلاعات: {str(e)}")
+            return
         
         for widget in self.root.winfo_children():
             widget.destroy()
@@ -154,13 +161,16 @@ class TrustAssessmentApp:
                         font=("B Nazanin", 14), bg="#2E7D64", fg="#FFD700")
         info.pack(pady=30)
         
-        close_btn = tk.Button(finish_frame, text="خروج", command=self.root.quit,
-                              font=("B Nazanin", 14), bg="#F44336", fg="white", padx=30, pady=10)
-        close_btn.pack(pady=20)
+        btn_frame = tk.Frame(finish_frame, bg="#2E7D64")
+        btn_frame.pack(pady=20)
         
-        close_btn = tk.Button(finish_frame, text="ثبت مجدد", command=self.reset_and_restart,
-                              font=("B Nazanin", 14), bg="#2196F3", fg="white", padx=30, pady=10)
-        close_btn.pack(pady=10)
+        close_btn = tk.Button(btn_frame, text="خروج", command=self.root.quit,
+                              font=("B Nazanin", 14), bg="#F44336", fg="white", padx=30, pady=10)
+        close_btn.pack(side="left", padx=20)
+        
+        new_btn = tk.Button(btn_frame, text="آزمون جدید", command=self.reset_and_restart,
+                            font=("B Nazanin", 14), bg="#2196F3", fg="white", padx=30, pady=10)
+        new_btn.pack(side="left", padx=20)
     
     def reset_and_restart(self):
         self.current_scenario_index = 0

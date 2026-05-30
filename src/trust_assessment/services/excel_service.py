@@ -19,36 +19,51 @@ class ExcelService:
         else:
             existing_data = {}
         
-        sheet1_data = self._create_sheet1_data(session)
-        sheet2_data = self._get_sheet2_data(existing_data)
-        sheet3_data = self._create_sheet3_data(session, existing_data)
+        sheet1_new_data = self._create_sheet1_row(session)
+        sheet3_new_data = self._create_sheet3_row(session, existing_data)
+        
+        sheet1_final = self._append_to_sheet(existing_data, 'Sheet1', sheet1_new_data)
+        sheet3_final = self._append_to_sheet(existing_data, 'Sheet3', sheet3_new_data)
+        sheet2_final = self._get_sheet2_data(existing_data)
         
         with pd.ExcelWriter(filename, engine='openpyxl', mode='w') as writer:
-            sheet1_data.to_excel(writer, sheet_name='Sheet1', index=False)
-            sheet2_data.to_excel(writer, sheet_name='Sheet2', index=False)
-            sheet3_data.to_excel(writer, sheet_name='Sheet3', index=False)
+            sheet1_final.to_excel(writer, sheet_name='Sheet1', index=False)
+            sheet2_final.to_excel(writer, sheet_name='Sheet2', index=False)
+            sheet3_final.to_excel(writer, sheet_name='Sheet3', index=False)
         
         return filename
     
-    def _create_sheet1_data(self, session: TestSession) -> pd.DataFrame:
-        sorted_responses = sorted(session.responses, key=lambda x: x.display_order)
+    def _append_to_sheet(self, existing_data: Dict, sheet_name: str, new_row: pd.DataFrame) -> pd.DataFrame:
+        if sheet_name in existing_data:
+            existing_df = existing_data[sheet_name]
+            if not existing_df.empty:
+                next_row_num = existing_df['ردیف'].max() + 1 if 'ردیف' in existing_df.columns else len(existing_df) + 1
+            else:
+                next_row_num = 1
+        else:
+            existing_df = pd.DataFrame()
+            next_row_num = 1
         
-        order_str = ''.join([r.scenario_name.replace('SEN', '') for r in sorted_responses])
+        if 'ردیف' in new_row.columns:
+            new_row['ردیف'] = next_row_num
+        
+        if existing_df.empty:
+            return new_row
+        else:
+            return pd.concat([existing_df, new_row], ignore_index=True)
+    
+    def _create_sheet1_row(self, session: TestSession) -> pd.DataFrame:
+        sorted_responses = sorted(session.responses, key=lambda x: x.display_order)
         
         row = {
             "ردیف": session.participant.code,
             "نام": session.participant.name,
             "سن": session.participant.age,
             "کلاس": session.participant.grade,
-            "نمایش اول": sorted_responses[0].scenario_name if len(sorted_responses) > 0 else "",
-            "نمایش دوم": sorted_responses[1].scenario_name if len(sorted_responses) > 1 else "",
-            "نمایش سوم": sorted_responses[2].scenario_name if len(sorted_responses) > 2 else "",
-            "نمایش چهارم": sorted_responses[3].scenario_name if len(sorted_responses) > 3 else "",
-            "نمایش پنجم": sorted_responses[4].scenario_name if len(sorted_responses) > 4 else "",
-            "نمایش ششم": sorted_responses[5].scenario_name if len(sorted_responses) > 5 else "",
-            "نمایش هفتم": sorted_responses[6].scenario_name if len(sorted_responses) > 6 else "",
-            "نمایش هشتم": sorted_responses[7].scenario_name if len(sorted_responses) > 7 else "",
         }
+        
+        for i, sr in enumerate(sorted_responses, 1):
+            row[f"نمایش {self._number_to_persian(i)}"] = sr.scenario_name
         
         for sr in sorted_responses:
             col_nic = f"{sr.scenario_name}-NIC"
@@ -67,8 +82,14 @@ class ExcelService:
         
         return pd.DataFrame([row])
     
+    def _number_to_persian(self, num: int) -> str:
+        persian_numbers = ['اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم', 'هفتم', 'هشتم']
+        if 1 <= num <= len(persian_numbers):
+            return persian_numbers[num - 1]
+        return str(num)
+    
     def _get_sheet2_data(self, existing_data: Dict) -> pd.DataFrame:
-        if 'Sheet2' in existing_data:
+        if 'Sheet2' in existing_data and not existing_data['Sheet2'].empty:
             return existing_data['Sheet2']
         
         default_data = {
@@ -89,7 +110,7 @@ class ExcelService:
         
         return pd.DataFrame(default_data)
     
-    def _create_sheet3_data(self, session: TestSession, existing_data: Dict) -> pd.DataFrame:
+    def _create_sheet3_row(self, session: TestSession, existing_data: Dict) -> pd.DataFrame:
         scores = self._calculate_all_scores(session)
         
         sorted_responses = sorted(session.responses, key=lambda x: x.display_order)
