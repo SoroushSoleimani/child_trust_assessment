@@ -1,4 +1,4 @@
 @echo off
-cd /d "E:\child_trust_assessment"
-start pythonw.exe ctk_app.py
-exit
+cd /d "%~dp0"
+python ctk_app.py
+pause
