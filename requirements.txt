@@ -1,0 +1,6 @@
+customtkinter
+opencv-python
+pandas
+openpyxl
+pillow
+python-vlc
