@@ -7,7 +7,6 @@ import pandas as pd
 from datetime import datetime
 import vlc
 import time
-import numpy as np
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("green")
@@ -88,11 +87,11 @@ class ModernTrustApp:
     
     def set_background_color(self):
         if self.gender == "girl":
-            self.root.configure(fg_color="#FFCDD2")
+            self.root.configure(fg_color="#FFCDD2")  # صورتی ملایم
         elif self.gender == "boy":
-            self.root.configure(fg_color="#BBDEFB")
+            self.root.configure(fg_color="#BBDEFB")  # آبی ملایم
         else:
-            self.root.configure(fg_color="#F5F5F5")
+            self.root.configure(fg_color="#E3F2FD")  # آبی بسیار روشن برای صفحه اول
     
     def clear_window(self):
         if self.break_timer_id:
@@ -106,7 +105,7 @@ class ModernTrustApp:
     
     def show_gender_selection(self):
         self.clear_window()
-        self.root.configure(fg_color="#F5F5F5")
+        self.root.configure(fg_color="#E3F2FD")
         
         frame = ctk.CTkFrame(self.root, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=40, pady=40)
@@ -138,6 +137,7 @@ class ModernTrustApp:
     
     def show_entry_form(self):
         self.clear_window()
+        self.set_background_color()
         
         frame = ctk.CTkFrame(self.root, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=40, pady=40)
@@ -181,6 +181,7 @@ class ModernTrustApp:
             return
         
         self.clear_window()
+        self.set_background_color()
         
         frame = ctk.CTkFrame(self.root, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=40, pady=40)
@@ -296,8 +297,8 @@ class ModernTrustApp:
             return
         
         self.clear_window()
+        self.set_background_color()
         
-        # Main container frame
         main_frame = ctk.CTkFrame(self.root, fg_color="transparent")
         main_frame.pack(expand=True, fill="both", padx=40, pady=40)
         
@@ -321,32 +322,24 @@ class ModernTrustApp:
         gold_opt = self.get_gold_standard(self.current_scenario)
         answer_var = tk.IntVar(value=0)
         
-        # Scrollable frame for options
         options_frame = ctk.CTkScrollableFrame(main_frame, fg_color="white", border_width=2, border_color="#CCCCCC")
         options_frame.pack(fill="both", expand=True, padx=20, pady=20)
         
-        # Store radio buttons for later reference (optional)
-        self.option_radios = []
-        
-        # Create each option as a horizontal frame containing radio and label
         for i, opt_text in enumerate(ANSWER_OPTIONS, 1):
-            # Container for each option
             opt_container = ctk.CTkFrame(options_frame, fg_color="transparent")
             opt_container.pack(fill="x", pady=8, padx=10)
             
-            # Radio button
             radio = ctk.CTkRadioButton(
                 opt_container,
                 variable=answer_var,
                 value=i,
-                text="",  # No text on radio, we'll use a separate label
+                text="",
                 fg_color=("#3B8ED0", "#1F6AA5") if self.gender == "boy" else ("#E91E63", "#C2185B"),
                 hover_color=("#3B8ED0", "#1F6AA5") if self.gender == "boy" else ("#E91E63", "#C2185B"),
                 border_color="#666666"
             )
-            radio.pack(side="right", padx=(10, 5))  # Right side for RTL
+            radio.pack(side="right", padx=(10, 5))
             
-            # Label text (with optional star for gold standard)
             display_text = opt_text
             if i == gold_opt:
                 display_text = f"{opt_text} ⭐"
@@ -362,12 +355,8 @@ class ModernTrustApp:
             )
             label.pack(side="right", fill="x", expand=True, padx=(5, 10))
             
-            # Bind label click to select radio
             label.bind("<Button-1>", lambda e, rb=radio, var=answer_var, val=i: (var.set(val), rb.select()))
-            # Also make the container clickable
             opt_container.bind("<Button-1>", lambda e, rb=radio, var=answer_var, val=i: (var.set(val), rb.select()))
-            
-            self.option_radios.append(radio)
         
         def next_question():
             val = answer_var.get()
@@ -384,6 +373,7 @@ class ModernTrustApp:
     
     def show_break(self):
         self.clear_window()
+        self.set_background_color()
         
         frame = ctk.CTkFrame(self.root, fg_color="transparent")
         frame.pack(expand=True, fill="both", padx=40, pady=40)
@@ -460,8 +450,6 @@ class ModernTrustApp:
                     "trust": int(row.get("اعتماد", 0)),
                     "gullibility": int(row.get("ساده لوحی", 0))
                 }
-            else:
-                print(f"هیچ نمره‌ای برای {scenario} گزینه {answer} یافت نشد")
         except Exception as e:
             print(f"Error in get_scores_from_keys: {e}")
         return {"mistrust": 0, "trust": 0, "gullibility": 0}
