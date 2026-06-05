@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+setup.py
+src/TrustAssessmentApp.egg-info/PKG-INFO
+src/TrustAssessmentApp.egg-info/SOURCES.txt
+src/TrustAssessmentApp.egg-info/dependency_links.txt
+src/TrustAssessmentApp.egg-info/top_level.txt
